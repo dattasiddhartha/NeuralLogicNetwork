@@ -3,15 +3,60 @@ import pandas as pd
 
 data = pd.read_csv("initialdata_v2.csv")
 
-encodedData = pd.DataFrame()
-for col in data.columns:
-    df = pd.get_dummies(data[col]) # one hot encoding
-    for newcol in df.columns:
-        name = str(col)+"_"+str(newcol)
-        encodedData[name] = df[newcol]
+# encoding using one-hot encoder
+
+from sklearn.preprocessing import OneHotEncoder
+enc = OneHotEncoder()
+
+
+## Binary calculation
+# Default
+enc.fit(np.array(data['Default']).reshape(-1, 1))
+ohe = enc.transform(np.array(data['Default']).reshape(-1, 1)).toarray()
+# enc.categories_
+ohe_fixed = []
+for i in ohe:
+#     print(i[1])
+    ohe_fixed.append(i[1])
+
+# Gender
+enc.fit(np.array(data['Gender']).reshape(-1, 1))
+ohe = enc.transform(np.array(data['Gender']).reshape(-1, 1)).toarray()
+# enc.categories_
+ohe_fixed2 = []
+for i in ohe:
+#     print(i[1])
+    ohe_fixed2.append(i[1])
+    
+# Married
+enc.fit(np.array(data['Married']).reshape(-1, 1))
+ohe = enc.transform(np.array(data['Married']).reshape(-1, 1)).toarray()
+# enc.categories_
+ohe_fixed4 = []
+for i in ohe:
+#     print(i[1])
+    ohe_fixed4.append(i[1])
         
-# single output column
-encodedDataComplete = encodedData.drop("Default_N", axis=1)
+        
+    
+## Mean based calculation
+# Age
+mean = data['Age'].mean()
+ohe_fixed3 = []
+for index, row in data.iterrows():
+    if row['Age'] >= mean:
+        ohe_fixed3.append(1)
+    if row['Age'] < mean:
+        ohe_fixed3.append(0)
+
+encodedDataComplete = pd.DataFrame()
+encodedDataComplete['Age'] = ohe_fixed3
+encodedDataComplete['Gender'] = ohe_fixed2
+encodedDataComplete['Married'] = ohe_fixed4
+encodedDataComplete['Default'] = ohe_fixed
+
+encodedDataComplete = encodedDataComplete.drop_duplicates()
+
 
 xCol = encodedDataComplete.columns[0:-1]
 yCol = encodedDataComplete.columns[-1]
